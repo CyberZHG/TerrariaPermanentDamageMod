@@ -1,0 +1,9 @@
+# C#
+bin
+obj
+
+# IDE
+.idea
+
+# MacOS
+.DS_Store

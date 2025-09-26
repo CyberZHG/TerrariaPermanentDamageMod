@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <tMLInstallPath Condition="'$(tMLInstallPath)' == ''">$(HOME)/Library/Application Support/Steam/steamapps/common/tModLoader/</tMLInstallPath>
+  </PropertyGroup>
+  <Import Project="$(tMLInstallPath)tMLMod.targets" />
+  <PropertyGroup>
+    <AssemblyName>PermanentDamage</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+</Project>

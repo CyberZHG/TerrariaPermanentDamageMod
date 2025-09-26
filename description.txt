@@ -1,0 +1,3 @@
+Each defeated enemies reduces the maximum health of future enemies of the same type by 0.1%.
+
+The reduction is linear and is saved per player.

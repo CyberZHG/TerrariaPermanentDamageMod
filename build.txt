@@ -1,0 +1,4 @@
+displayName = Permanent Damage
+author = cyberzhg
+version = 0.1.0
+description = Each kill permanently reduces the maximum health of future enemies of the same type.
