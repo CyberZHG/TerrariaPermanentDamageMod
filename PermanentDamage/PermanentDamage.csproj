@@ -8,4 +8,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="PermanentDamage\" />
+  </ItemGroup>
 </Project>
