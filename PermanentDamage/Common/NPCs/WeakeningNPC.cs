@@ -11,6 +11,10 @@ namespace PermanentDamage.NPCs;
 
 public class WeakeningNPC : GlobalNPC
 {
+    public override bool InstancePerEntity => true;
+    
+    private bool initialized = false;
+    
     private static bool IsEligible(NPC npc)
     {
         return !npc.friendly
@@ -21,8 +25,14 @@ public class WeakeningNPC : GlobalNPC
                && npc.lifeMax > 1;
     }
 
-    public override void OnSpawn(NPC npc, IEntitySource source)
+    public override void PostAI(NPC npc)
     {
+        if (initialized)
+        {
+            return;
+        }
+
+        initialized = true;
         if (!IsEligible(npc))
         {
             return;
@@ -36,7 +46,7 @@ public class WeakeningNPC : GlobalNPC
         {
             npc.netUpdate = true;
         }
-        Main.NewText(WeakeningSystem.GetNPCKey(npc.type) + " x " + multiplier.ToString());
+        Main.NewText(WeakeningSystem.GetNPCKey(npc.type) + " x " + multiplier.ToString("0.###") + ": " + npc.life.ToString());
     }
 
     public override void OnKill(NPC npc)
