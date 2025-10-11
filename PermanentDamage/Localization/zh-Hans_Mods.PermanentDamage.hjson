@@ -1,0 +1,34 @@
+Configs: {
+	WeakeningConfig: {
+		DisplayName: 永久伤害配置
+
+		Enabled: {
+			Label: 是否启用
+			Tooltip: ""
+		}
+
+		BasedOn: {
+			Label: 基于
+			Tooltip: 击杀数量是按世界还是玩家进行统计
+		}
+
+		KillsCap: {
+			Label: 击杀上限
+			Tooltip: 当达到这个击杀数时，血量上限削减达到极限
+		}
+	}
+
+	WeakeningBasedOn: {
+		Tooltip: ""
+
+		World: {
+			Label: 世界
+			Tooltip: ""
+		}
+
+		Player: {
+			Label: 玩家
+			Tooltip: ""
+		}
+	}
+}

@@ -5,6 +5,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using PermanentDamage.Config;
 
 namespace PermanentDamage.Systems;
 
@@ -12,8 +13,11 @@ public class WeakeningSystem : ModSystem
 {
     private const double BASE_MULTIPLIER = 1.0 / 10.0;
     
-    private const string SAVE_KEY_KILL_COUNT_KEYS = "PermanentDamageKillCountsKeys";
-    private const string SAVE_KEY_KILL_COUNT_VALUES = "PermanentDamageKillCountsValues";
+	private const string SAVE_KEY_SETTINGS = "Settings";
+    private const string SAVE_KEY_KILL_COUNT_KEYS = "KillCountsKeys";
+    private const string SAVE_KEY_KILL_COUNT_VALUES = "KillCountsValues";
+
+	public static WeakeningSettings Settings { get; private set; }
     
     private static readonly Dictionary<string, int> KillCounts = new();
     private static readonly Dictionary<string, double> DamageSums = new();
@@ -84,6 +88,10 @@ public class WeakeningSystem : ModSystem
     
     public override void SaveWorldData(TagCompound tag)
     {
+		if (Settings != null)
+		{
+			tag[SAVE_KEY_SETTINGS] = Settings.Save();
+		}
         List<string> keys = new();
         List<int> values = new();
 
@@ -99,6 +107,15 @@ public class WeakeningSystem : ModSystem
 
     public override void LoadWorldData(TagCompound tag)
     {
+		if (tag.ContainsKey(SAVE_KEY_SETTINGS))
+		{
+			Settings = WeakeningSettings.Load(tag.GetCompound(SAVE_KEY_SETTINGS));
+		}
+		else
+		{
+			Settings = WeakeningSettings.Default;
+		}
+
         KillCounts.Clear();
         DamageSums.Clear();
 

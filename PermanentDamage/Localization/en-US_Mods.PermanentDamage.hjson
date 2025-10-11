@@ -1,0 +1,34 @@
+Configs: {
+	WeakeningConfig: {
+		DisplayName: Permanent Damage Config
+
+		Enabled: {
+			Label: Enabled
+			Tooltip: ""
+		}
+
+		BasedOn: {
+			Label: Based On
+			Tooltip: Whether the kill count is based on the world or the player
+		}
+
+		KillsCap: {
+			Label: Kills Cap
+			Tooltip: The Max-HP reduction reaches its limit when this kill count is reached
+		}
+	}
+
+	WeakeningBasedOn: {
+		Tooltip: ""
+
+		World: {
+			Label: World
+			Tooltip: ""
+		}
+
+		Player: {
+			Label: Player
+			Tooltip: ""
+		}
+	}
+}

@@ -27,7 +27,7 @@ public class WeakeningNPC : GlobalNPC
 
     public override void PostAI(NPC npc)
     {
-        if (initialized)
+        if (!WeakeningSystem.Settings.Enabled || initialized || Main.netMode == NetmodeID.MultiplayerClient)
         {
             return;
         }
@@ -51,7 +51,7 @@ public class WeakeningNPC : GlobalNPC
 
     public override void OnKill(NPC npc)
     {
-        if (Main.netMode == NetmodeID.MultiplayerClient)
+        if (!WeakeningSystem.Settings.Enabled || Main.netMode == NetmodeID.MultiplayerClient)
         {
             return;
         }
