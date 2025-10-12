@@ -46,7 +46,7 @@ public class WeakeningNPC : GlobalNPC
         {
             npc.netUpdate = true;
         }
-        Main.NewText(WeakeningSystem.GetNPCKey(npc.type) + " x " + multiplier.ToString("0.###") + ": " + npc.life.ToString());
+        // Main.NewText(WeakeningSystem.GetNPCKey(npc.type) + " x " + multiplier.ToString("0.###") + ": " + npc.life.ToString());
     }
 
     public override void OnKill(NPC npc)

@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using Terraria;
 using Terraria.ModLoader.Config;
+using PermanentDamage.Systems;
 
 namespace PermanentDamage.Config;
 
@@ -26,4 +28,12 @@ public sealed class WeakeningConfig : ModConfig
     [Slider]
     [DrawTicks]
     public int KillsCap;
+
+    public override void OnChanged()
+    {
+        if (!Main.gameMenu)
+        {
+            WeakeningSystem.ApplyFromConfig(this);
+        }
+    }
 }
