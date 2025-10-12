@@ -7,18 +7,23 @@ Configs: {
 			Tooltip: ""
 		}
 
-		BasedOn: {
-			Label: Based On
-			Tooltip: Whether the kill count is based on the world or the player
+		Scope: {
+			Label: Scope
+			Tooltip: Whether the statistics are based on the world or the player
 		}
 
-		KillsCap: {
-			Label: Kills Cap
-			Tooltip: The Max-HP reduction reaches its limit when this kill count is reached
+		Metric: {
+			Label: Metric
+			Tooltip: Whether the weakening is based on the kill count or the total damage
+		}
+
+		WeakeningThreshold: {
+			Label: Weakening Threshold
+			Tooltip: The Max-HP reduction reaches its limit when this value is reached
 		}
 	}
 
-	WeakeningBasedOn: {
+	WeakeningScope: {
 		Tooltip: ""
 
 		World: {
@@ -29,6 +34,20 @@ Configs: {
 		Player: {
 			Label: Player
 			Tooltip: ""
+		}
+	}
+
+	WeakeningMetric: {
+		Tooltip: ""
+
+		KillCount: {
+			Label: Kill Count
+			Tooltip: ""
+		}
+
+		Damage: {
+			Label: Total Damage
+			Tooltip: "This tracks the ratio relative to maximum health"
 		}
 	}
 }

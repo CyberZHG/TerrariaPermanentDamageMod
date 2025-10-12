@@ -7,28 +7,47 @@ Configs: {
 			Tooltip: ""
 		}
 
-		BasedOn: {
-			Label: 基于
-			Tooltip: 击杀数量是按世界还是玩家进行统计
+		Scope: {
+			Label: 统计范围
+			Tooltip: 击杀统计是依据世界还是玩家
 		}
 
-		KillsCap: {
-			Label: 击杀上限
+		Metric: {
+			Label: 参照指标
+			Tooltip: 削弱是依据击杀数还是造成的伤害
+		}
+
+		WeakeningThreshold: {
+			Label: 削弱阈值
 			Tooltip: 当达到这个击杀数时，血量上限削减达到极限
 		}
 	}
 
-	WeakeningBasedOn: {
-		Tooltip: ""
+	WeakeningScope: {
+		// Tooltip: ""
 
 		World: {
 			Label: 世界
-			Tooltip: ""
+			// Tooltip: ""
 		}
 
 		Player: {
 			Label: 玩家
-			Tooltip: ""
+			// Tooltip: ""
+		}
+	}
+
+	WeakeningMetric: {
+		// Tooltip: ""
+
+		KillCount: {
+			Label: 击杀数
+			// Tooltip: ""
+		}
+
+		Damage: {
+			Label: 造成伤害
+			Tooltip: "统计相对于最大生命值的比例"
 		}
 	}
 }

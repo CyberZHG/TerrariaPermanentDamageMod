@@ -6,10 +6,16 @@ using PermanentDamage.Systems;
 namespace PermanentDamage.Config;
 
 
-public enum WeakeningBasedOn
+public enum WeakeningScope
 {
     World,
     Player,
+}
+
+public enum WeakeningMetric
+{
+    KillCount,
+    Damage,
 }
 
 public sealed class WeakeningConfig : ModConfig
@@ -19,15 +25,18 @@ public sealed class WeakeningConfig : ModConfig
     [DefaultValue(false)]
     public bool Enabled;
 
-    [DefaultValue(WeakeningBasedOn.World)]
-    public WeakeningBasedOn BasedOn;
+    [DefaultValue(WeakeningScope.World)]
+    public WeakeningScope Scope;
+
+    [DefaultValue(WeakeningMetric.KillCount)]
+    public WeakeningMetric Metric;
 
     [Range(100, 1000)]
     [Increment(100)]
     [DefaultValue(500)]
     [Slider]
     [DrawTicks]
-    public int KillsCap;
+    public int WeakeningThreshold;
 
     public override void OnChanged()
     {

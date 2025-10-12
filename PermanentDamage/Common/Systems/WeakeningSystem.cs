@@ -29,13 +29,13 @@ public class WeakeningSystem : ModSystem
         Main.LocalPlayer.GetModPlayer<WeakeningPlayer>();
 
     private static bool UsePlayerScope =>
-        Settings.BasedOn == WeakeningBasedOn.Player;
+        Settings.Scope == WeakeningScope.Player;
 
     internal static void ApplyFromConfig(WeakeningConfig config)
     {
         if (config != null)
         {
-            settings = new WeakeningSettings(config.Enabled, config.BasedOn, config.KillsCap);
+            settings = new WeakeningSettings(config.Enabled, config.Scope, config.Metric, config.WeakeningThreshold);
         }
     }
 
@@ -48,8 +48,9 @@ public class WeakeningSystem : ModSystem
         }
 
         config.Enabled = settings.Enabled;
-        config.BasedOn = settings.BasedOn;
-        config.KillsCap = settings.KillsCap;
+        config.Scope = settings.Scope;
+        config.Metric = settings.Metric;
+        config.WeakeningThreshold = settings.WeakeningThreshold;
     }
 
     public static string GetNPCKey(int type)
@@ -113,7 +114,16 @@ public class WeakeningSystem : ModSystem
 
     public static double GetHealthMultiplier(int type)
     {
-        return Math.Max(0.001, 1.0 - GetKillCount(type) / (double)Settings.KillsCap);
+        if (Settings.WeakeningThreshold <= 0)
+        {
+            return 1.0;
+        }
+
+        double accumulated = Settings.Metric == WeakeningMetric.Damage
+            ? GetDamageSum(type)
+            : GetKillCount(type);
+
+        return Math.Max(0.001, 1.0 - accumulated / Settings.WeakeningThreshold);
     }
 
     public override void SaveWorldData(TagCompound tag)

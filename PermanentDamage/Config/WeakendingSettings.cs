@@ -2,17 +2,22 @@ using Terraria.ModLoader.IO;
 
 namespace PermanentDamage.Config;
 
-public sealed record WeakeningSettings(bool Enabled, WeakeningBasedOn BasedOn, int KillsCap)
+public sealed record WeakeningSettings(bool Enabled, WeakeningScope Scope, WeakeningMetric Metric, int WeakeningThreshold)
 {
-	public static WeakeningSettings Default => new(false, WeakeningBasedOn.World, 500);
+	public static WeakeningSettings Default => new(false, WeakeningScope.World, WeakeningMetric.KillCount, 500);
 
-	public TagCompound Save() => new() 
+	public TagCompound Save() => new()
 	{
 		["enabled"] = Enabled,
-		["basedOn"] = (int)BasedOn,
-		["KillsCap"] = KillsCap,
+		["scope"] = (int)Scope,
+		["metric"] = (int)Metric,
+		["threshold"] = WeakeningThreshold,
 	};
 
-	public static WeakeningSettings Load(TagCompound tag) => 
-		new(tag.GetBool("enabled"), (WeakeningBasedOn)tag.GetInt("basedOn"), tag.GetInt("KillsCap"));
+	public static WeakeningSettings Load(TagCompound tag) =>
+		new(
+			tag.GetBool("enabled"),
+			(WeakeningScope)tag.GetInt("scope"),
+			(WeakeningMetric)tag.GetInt("metric"),
+			tag.GetInt("threshold"));
 }
