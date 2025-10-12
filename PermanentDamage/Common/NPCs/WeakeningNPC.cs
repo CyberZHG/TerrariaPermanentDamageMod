@@ -63,6 +63,38 @@ public class WeakeningNPC : GlobalNPC
         WeakeningSystem.AddKillCount(npc.type);
         PermanentDamage.BroadcastKillUpdate(npc.type);
     }
+
+	public override void OnHitByItem(NPC npc, Player player, Item item, NPC.HitInfo hit, int damageDone)
+    {
+        if (!WeakeningSystem.Settings.Enabled || Main.netMode == NetmodeID.MultiplayerClient)
+        {
+            return;
+        }
+        if (!IsEligible(npc))
+        {
+            return;
+        }
+		
+		double damage = (double)damageDone / npc.lifeMax;
+		WeakeningSystem.AddTotalDamage(npc.type, damage);
+        PermanentDamage.BroadcastDamageUpdate(npc.type, damage);
+    }
+
+    public override void OnHitByProjectile(NPC npc, Projectile projectile, NPC.HitInfo hit, int damageDone)
+    {
+        if (!WeakeningSystem.Settings.Enabled || Main.netMode == NetmodeID.MultiplayerClient)
+        {
+            return;
+        }
+        if (!IsEligible(npc))
+        {
+            return;
+        }
+		
+		double damage = (double)damageDone / npc.lifeMax;
+		WeakeningSystem.AddTotalDamage(npc.type, damage);
+        PermanentDamage.BroadcastDamageUpdate(npc.type, damage);
+    }
     
     public override void SendExtraAI(NPC npc, BitWriter bitWriter, BinaryWriter binaryWriter)
     {

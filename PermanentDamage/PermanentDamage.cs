@@ -9,6 +9,7 @@ namespace PermanentDamage;
 public class PermanentDamage : Mod
 {
     internal const byte KillUpdatePacket = 1;
+    internal const byte DamageUpdatePacket = 2;
 
     public override void HandlePacket(BinaryReader reader, int whoAmI)
     {
@@ -27,6 +28,18 @@ public class PermanentDamage : Mod
                 WeakeningSystem.AddKillCount(npcType, kills);
                 break;
             }
+            case DamageUpdatePacket:
+            {
+                int npcType = reader.ReadInt32();
+                double damage = reader.ReadDouble();
+                if (Main.netMode != NetmodeID.MultiplayerClient)
+                {
+                    return;
+                }
+                WeakeningSystem.AddTotalDamage(npcType, damage);
+                break;
+            }
+
 
             default:
                 Logger.Warn($"Unknown packet type: {packetType}");
@@ -44,6 +57,19 @@ public class PermanentDamage : Mod
         packet.Write(KillUpdatePacket);
         packet.Write(npcType);
         packet.Write(kills);
+        packet.Send();
+    }
+
+    internal static void BroadcastDamageUpdate(int npcType, double damage)
+    {
+        if (Main.netMode != NetmodeID.Server)
+        {
+            return;
+        }
+        ModPacket packet = ModContent.GetInstance<PermanentDamage>().GetPacket();
+        packet.Write(DamageUpdatePacket);
+        packet.Write(npcType);
+        packet.Write(damage);
         packet.Send();
     }
 }

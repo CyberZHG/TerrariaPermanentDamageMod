@@ -19,7 +19,7 @@ Configs: {
 
 		WeakeningThreshold: {
 			Label: Weakening Threshold
-			Tooltip: The Max-HP reduction reaches its limit when this value is reached
+			Tooltip: The max-life reduction reaches its limit when this value is reached
 		}
 	}
 

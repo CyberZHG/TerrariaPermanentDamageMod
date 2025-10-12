@@ -102,7 +102,7 @@ public class WeakeningSystem : ModSystem
         playerKills[npcKey] = GetValue(playerKills, npcKey) + kills;
     }
 
-    public static void AddTotalDamage(int type, int damage)
+    public static void AddTotalDamage(int type, double damage)
     {
         string npcKey = GetNPCKey(type);
 
