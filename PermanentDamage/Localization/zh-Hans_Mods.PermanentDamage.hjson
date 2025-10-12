@@ -21,6 +21,16 @@ Configs: {
 			Label: 削弱阈值
 			Tooltip: 当达到这个击杀数时，血量上限削减达到极限
 		}
+
+		ShowWeakeningMessage: {
+			Label: 发送削弱消息
+			// Tooltip: ""
+		}
+
+		MessageFrequency: {
+			Label: 消息频率
+			// Tooltip: ""
+		}
 	}
 
 	WeakeningScope: {
@@ -47,7 +57,31 @@ Configs: {
 
 		Damage: {
 			Label: 造成伤害
-			Tooltip: "统计相对于最大生命值的比例"
+			Tooltip: 统计相对于最大生命值的比例
+		}
+	}
+
+	WeakeningMessageFrequency: {
+		// Tooltip: ""
+
+		Every1: {
+			Label: 每次击杀
+			// Tooltip: ""
+		}
+
+		Every10: {
+			Label: 每10次击杀
+			// Tooltip: ""
+		}
+
+		Every50: {
+			Label: 每50次击杀
+			// Tooltip: ""
+		}
+
+		Every100: {
+			Label: 每100次击杀
+			// Tooltip: ""
 		}
 	}
 }

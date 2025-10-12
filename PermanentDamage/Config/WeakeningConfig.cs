@@ -18,6 +18,14 @@ public enum WeakeningMetric
     Damage,
 }
 
+public enum WeakeningMessageFrequency
+{
+    Every1 = 1,
+    Every10 = 10,
+    Every50 = 50,
+    Every100 = 100,
+}
+
 public sealed class WeakeningConfig : ModConfig
 {
     public override ConfigScope Mode => ConfigScope.ServerSide;
@@ -37,6 +45,12 @@ public sealed class WeakeningConfig : ModConfig
     [Slider]
     [DrawTicks]
     public int WeakeningThreshold;
+
+    [DefaultValue(false)]
+    public bool ShowWeakeningMessage;
+
+    [DefaultValue(WeakeningMessageFrequency.Every50)]
+    public WeakeningMessageFrequency MessageFrequency;
 
     public override void OnChanged()
     {

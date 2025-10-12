@@ -21,6 +21,16 @@ Configs: {
 			Label: Weakening Threshold
 			Tooltip: The max-life reduction reaches its limit when this value is reached
 		}
+
+		ShowWeakeningMessage: {
+			Label: Show Weakening Message
+			Tooltip: ""
+		}
+
+		MessageFrequency: {
+			Label: Message Frequency
+			Tooltip: ""
+		}
 	}
 
 	WeakeningScope: {
@@ -47,7 +57,31 @@ Configs: {
 
 		Damage: {
 			Label: Total Damage
-			Tooltip: "This tracks the ratio relative to maximum health"
+			Tooltip: This tracks the ratio relative to maximum health
+		}
+	}
+
+	WeakeningMessageFrequency: {
+		Tooltip: ""
+
+		Every1: {
+			Label: Every 1
+			Tooltip: ""
+		}
+
+		Every10: {
+			Label: Every 10
+			Tooltip: ""
+		}
+
+		Every50: {
+			Label: Every 50
+			Tooltip: ""
+		}
+
+		Every100: {
+			Label: Every 100
+			Tooltip: ""
 		}
 	}
 }

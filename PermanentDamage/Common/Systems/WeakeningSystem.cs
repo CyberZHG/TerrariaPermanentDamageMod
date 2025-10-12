@@ -35,7 +35,13 @@ public class WeakeningSystem : ModSystem
     {
         if (config != null)
         {
-            settings = new WeakeningSettings(config.Enabled, config.Scope, config.Metric, config.WeakeningThreshold);
+            settings = new WeakeningSettings(
+                config.Enabled,
+                config.Scope,
+                config.Metric,
+                config.WeakeningThreshold,
+                config.ShowWeakeningMessage,
+                config.MessageFrequency);
         }
     }
 
@@ -51,6 +57,8 @@ public class WeakeningSystem : ModSystem
         config.Scope = settings.Scope;
         config.Metric = settings.Metric;
         config.WeakeningThreshold = settings.WeakeningThreshold;
+        config.ShowWeakeningMessage = settings.ShowWeakeningMessage;
+        config.MessageFrequency = settings.MessageFrequency;
     }
 
     public static string GetNPCKey(int type)
