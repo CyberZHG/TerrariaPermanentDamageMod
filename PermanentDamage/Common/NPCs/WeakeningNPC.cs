@@ -1,11 +1,13 @@
 using System;
 using System.IO;
+using System.Text;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using PermanentDamage.Systems;
+using PermanentDamage.Config;
 
 namespace PermanentDamage.NPCs;
 
@@ -14,7 +16,8 @@ public class WeakeningNPC : GlobalNPC
     public override bool InstancePerEntity => true;
     
     private bool initialized = false;
-    
+    private int countedDamage = 0;
+
     private static bool IsEligible(NPC npc)
     {
         return !npc.friendly
@@ -46,8 +49,34 @@ public class WeakeningNPC : GlobalNPC
         {
             npc.netUpdate = true;
         }
-        // Main.NewText(WeakeningSystem.GetNPCKey(npc.type) + " x " + multiplier.ToString("0.###") + ": " + npc.life.ToString());
     }
+
+	private void ShowWeakeningMessage(NPC npc)
+	{
+		if (!WeakeningSystem.Settings.ShowWeakeningMessage)
+		{
+			return;
+		}
+		if (WeakeningSystem.GetKillCount(npc.type) % (int)WeakeningSystem.Settings.MessageFrequency != 0)
+		{
+ 			return;
+		}
+
+		StringBuilder message = new StringBuilder();
+		message.Append("Permanent Damage: ");
+		message.Append(npc.FullName + " (" + npc.type.ToString() + ") | ");
+		if (WeakeningSystem.Settings.Metric == WeakeningMetric.KillCount)
+		{
+			message.Append("Kills " + WeakeningSystem.GetKillCount(npc.type).ToString());
+		}
+		else
+		{
+			message.Append("Damage " + WeakeningSystem.GetDamageSum(npc.type).ToString("0.##"));
+		}
+		double multiplier = WeakeningSystem.GetHealthMultiplier(npc.type) * 100.0;
+		message.Append(" | LifeMax " + multiplier.ToString("0.#") + "%");
+        Main.NewText(message.ToString());
+	}
 
     public override void OnKill(NPC npc)
     {
@@ -62,6 +91,7 @@ public class WeakeningNPC : GlobalNPC
 
         WeakeningSystem.AddKillCount(npc.type);
         PermanentDamage.BroadcastKillUpdate(npc.type);
+		ShowWeakeningMessage(npc);
     }
 
 	private void UpdateDamage(NPC npc, int damageDone)
@@ -75,7 +105,16 @@ public class WeakeningNPC : GlobalNPC
             return;
         }
 		
-		double damage = (double)damageDone / npc.lifeMax;
+		int remaining = npc.lifeMax - countedDamage;
+		if (remaining <= 0)
+		{
+			return;
+		}
+
+		int counted = Math.Min(damageDone, remaining);
+		countedDamage += counted;
+
+		double damage = (double)counted / npc.lifeMax;
 		WeakeningSystem.AddTotalDamage(npc.type, damage);
         PermanentDamage.BroadcastDamageUpdate(npc.type, damage);
 	}
