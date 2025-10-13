@@ -17,7 +17,7 @@ public class WeakeningNPC : GlobalNPC
     public override bool InstancePerEntity => true;
     
     private bool initialized = false;
-    private int countedDamage = 0;
+    private int previousLife = 0;
 
     private static bool IsEligible(NPC npc)
     {
@@ -31,25 +31,47 @@ public class WeakeningNPC : GlobalNPC
 
     public override void PostAI(NPC npc)
     {
-        if (!WeakeningSystem.Settings.Enabled || initialized || Main.netMode == NetmodeID.MultiplayerClient)
+        if (!WeakeningSystem.Settings.Enabled || Main.netMode == NetmodeID.MultiplayerClient || !IsEligible(npc))
         {
             return;
         }
 
-        initialized = true;
-        if (!IsEligible(npc))
+        if (!initialized)
+        {
+            initialized = true;
+
+            double multiplier = WeakeningSystem.GetHealthMultiplier(npc.type);
+            int newLifeMax = Math.Max(1, (int)Math.Floor(npc.lifeMax * multiplier));
+            npc.life = Math.Clamp((int)Math.Ceiling((double)npc.life * newLifeMax / npc.lifeMax), 1, newLifeMax);
+            npc.lifeMax = newLifeMax;
+            previousLife = npc.life;
+
+            if (Main.netMode == NetmodeID.Server)
+            {
+                npc.netUpdate = true;
+            }
+
+            return;
+        }
+
+        if (npc.life < previousLife)
+        {
+            RegisterDamage(npc, previousLife - npc.life);
+        }
+
+        previousLife = npc.life;
+    }
+
+    private void RegisterDamage(NPC npc, int lifeLost)
+    {
+        if (lifeLost <= 0)
         {
             return;
         }
-        
-        double multiplier = WeakeningSystem.GetHealthMultiplier(npc.type);
-        int newLifeMax = Math.Max(1, (int)Math.Floor(npc.lifeMax * multiplier));
-        npc.life = Math.Clamp((int)Math.Ceiling((double)npc.life * newLifeMax / npc.lifeMax), 1, newLifeMax);
-        npc.lifeMax = newLifeMax;
-        if (Main.netMode == NetmodeID.Server)
-        {
-            npc.netUpdate = true;
-        }
+
+        double damage = (double)lifeLost / npc.lifeMax;
+        WeakeningSystem.AddTotalDamage(npc.type, damage);
+        PermanentDamage.BroadcastDamageUpdate(npc.type, damage);
     }
 
 	private void ShowWeakeningMessage(NPC npc)
@@ -65,7 +87,7 @@ public class WeakeningNPC : GlobalNPC
 
 		StringBuilder message = new StringBuilder();
 		message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Prefix"));
-		message.Append(npc.FullName + " (" + npc.type.ToString() + ")   ");
+		message.Append(npc.FullName + " (" + npc.type.ToString() + ")  ");
 		if (WeakeningSystem.Settings.Metric == WeakeningMetric.KillCount)
 		{
 			message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Kills"));
@@ -77,7 +99,7 @@ public class WeakeningNPC : GlobalNPC
 			message.Append(" " + WeakeningSystem.GetDamageSum(npc.type).ToString("0.##"));
 		}
 		double multiplier = WeakeningSystem.GetHealthMultiplier(npc.type) * 100.0;
-		message.Append("   ");
+		message.Append("  ");
 		message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.LifeMax"));
 		message.Append(" " + multiplier.ToString("0.#") + "%");
         Main.NewText(message.ToString());
@@ -85,55 +107,18 @@ public class WeakeningNPC : GlobalNPC
 
     public override void OnKill(NPC npc)
     {
-        if (!WeakeningSystem.Settings.Enabled || Main.netMode == NetmodeID.MultiplayerClient)
+        if (!WeakeningSystem.Settings.Enabled || Main.netMode == NetmodeID.MultiplayerClient || !IsEligible(npc))
         {
             return;
         }
-        if (!IsEligible(npc))
-        {
-            return;
-        }
+
+        RegisterDamage(npc, previousLife);
 
         WeakeningSystem.AddKillCount(npc.type);
         PermanentDamage.BroadcastKillUpdate(npc.type);
 		ShowWeakeningMessage(npc);
     }
 
-	private void UpdateDamage(NPC npc, int damageDone)
-	{
-        if (!WeakeningSystem.Settings.Enabled || Main.netMode == NetmodeID.MultiplayerClient)
-        {
-            return;
-        }
-        if (!IsEligible(npc))
-        {
-            return;
-        }
-		
-		int remaining = npc.lifeMax - countedDamage;
-		if (remaining <= 0)
-		{
-			return;
-		}
-
-		int counted = Math.Min(damageDone, remaining);
-		countedDamage += counted;
-
-		double damage = (double)counted / npc.lifeMax;
-		WeakeningSystem.AddTotalDamage(npc.type, damage);
-        PermanentDamage.BroadcastDamageUpdate(npc.type, damage);
-	}
-
-	public override void OnHitByItem(NPC npc, Player player, Item item, NPC.HitInfo hit, int damageDone)
-    {
-		UpdateDamage(npc, damageDone);
-    }
-
-    public override void OnHitByProjectile(NPC npc, Projectile projectile, NPC.HitInfo hit, int damageDone)
-    {
-		UpdateDamage(npc, damageDone);
-    }
-    
     public override void SendExtraAI(NPC npc, BitWriter bitWriter, BinaryWriter binaryWriter)
     {
         binaryWriter.Write(npc.lifeMax);
