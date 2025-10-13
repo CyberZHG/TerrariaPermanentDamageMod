@@ -6,6 +6,7 @@ using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using Terraria.Localization;
 using PermanentDamage.Systems;
 using PermanentDamage.Config;
 
@@ -63,18 +64,22 @@ public class WeakeningNPC : GlobalNPC
 		}
 
 		StringBuilder message = new StringBuilder();
-		message.Append("Permanent Damage: ");
-		message.Append(npc.FullName + " (" + npc.type.ToString() + ") | ");
+		message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Prefix"));
+		message.Append(npc.FullName + " (" + npc.type.ToString() + ")   ");
 		if (WeakeningSystem.Settings.Metric == WeakeningMetric.KillCount)
 		{
-			message.Append("Kills " + WeakeningSystem.GetKillCount(npc.type).ToString());
+			message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Kills"));
+			message.Append(" " + WeakeningSystem.GetKillCount(npc.type).ToString());
 		}
 		else
 		{
-			message.Append("Damage " + WeakeningSystem.GetDamageSum(npc.type).ToString("0.##"));
+			message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Damage"));
+			message.Append(" " + WeakeningSystem.GetDamageSum(npc.type).ToString("0.##"));
 		}
 		double multiplier = WeakeningSystem.GetHealthMultiplier(npc.type) * 100.0;
-		message.Append(" | LifeMax " + multiplier.ToString("0.#") + "%");
+		message.Append("   ");
+		message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.LifeMax"));
+		message.Append(" " + multiplier.ToString("0.#") + "%");
         Main.NewText(message.ToString());
 	}
 

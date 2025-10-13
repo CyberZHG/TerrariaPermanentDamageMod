@@ -85,3 +85,10 @@ Configs: {
 		}
 	}
 }
+
+Messages: {
+	Prefix: "Permanent Damage: "
+	Kills: Kills
+	Damage: Damage
+	LifeMax: LifeMax
+}

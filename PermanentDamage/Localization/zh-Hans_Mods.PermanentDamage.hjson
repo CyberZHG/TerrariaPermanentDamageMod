@@ -85,3 +85,10 @@ Configs: {
 		}
 	}
 }
+
+Messages: {
+	Prefix: 永久伤害：
+	Kills: 击杀数
+	Damage: 造成伤害
+	LifeMax: 生命上限
+}
