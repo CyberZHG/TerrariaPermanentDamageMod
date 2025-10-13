@@ -21,12 +21,11 @@ public class WeakeningNPC : GlobalNPC
 
     private static bool IsEligible(NPC npc)
     {
+		// May be optional: !npc.dontTakeDamage && npc.lifeMax > 1
         return !npc.friendly
                && !npc.townNPC
                && !npc.immortal
-               && !npc.dontTakeDamage
-               && !npc.CountsAsACritter
-               && npc.lifeMax > 1;
+               && !npc.CountsAsACritter;
     }
 
     public override void PostAI(NPC npc)
