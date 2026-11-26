@@ -1,5 +1,5 @@
 # Terraria MOD - Permanent Damage
 
-![](PermanentDamage/icon_workshop.png)
+Every time you kill or damage an enemy, the maximum health of enemies that spawn afterward will be reduced.
 
-Deal permanent damage to enemies
+![](PermanentDamage/icon_workshop.png)
