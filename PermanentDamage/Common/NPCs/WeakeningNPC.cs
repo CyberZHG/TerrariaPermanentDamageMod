@@ -100,8 +100,27 @@ public class WeakeningNPC : GlobalNPC
 		double multiplier = WeakeningSystem.GetHealthMultiplier(npc.type) * 100.0;
 		message.Append("  ");
 		message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.LifeMax"));
-		message.Append(" " + multiplier.ToString("0.#") + "%");
-        Main.NewText(message.ToString());
+		message.Append(" ");
+		if (multiplier > 1.0)
+		{
+			message.Append(multiplier.ToString("0.#") + "%");
+		}
+		else if (multiplier > 0.1)
+        {
+			message.Append(multiplier.ToString("0.##") + "%");
+		}
+		else
+		{
+			message.Append(multiplier.ToString("0.###") + "%");
+		}
+		if (Main.netMode == NetmodeID.Server)
+		{
+			Terraria.Chat.ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message.ToString()), Microsoft.Xna.Framework.Color.White);
+		}
+		else
+		{
+			Main.NewText(message.ToString());
+		}
 	}
 
     public override void OnKill(NPC npc)
