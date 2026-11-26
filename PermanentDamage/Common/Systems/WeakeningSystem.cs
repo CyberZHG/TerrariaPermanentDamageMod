@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -78,46 +79,131 @@ public class WeakeningSystem : ModSystem
         return "";
     }
 
-    public static int GetKillCount(string npcKey)
-    {
-        Dictionary<string, int> kills = UsePlayerScope ? LocalWeakeningPlayer.KillCounts : WorldKillCounts;
-        return GetValue(kills, npcKey);
-    }
-
     public static int GetKillCount(int type)
     {
-        return GetKillCount(GetNPCKey(type));
-    }
+        string npcKey = GetNPCKey(type);
 
-    public static double GetDamageSum(string npcKey)
-    {
-        Dictionary<string, double> damage = UsePlayerScope ? LocalWeakeningPlayer.DamageSums : WorldDamageSums;
-        return GetValue(damage, npcKey);
+        if (!UsePlayerScope)
+        {
+            return GetValue(WorldKillCounts, npcKey);
+        }
+
+        if (Main.netMode == NetmodeID.SinglePlayer)
+        {
+            return GetValue(LocalWeakeningPlayer.KillCounts, npcKey);
+        }
+
+        // Player scope in multiplayer: aggregate of every player.
+        int sum = 0;
+        for (int i = 0; i < Main.maxPlayers; i++)
+        {
+            Player player = Main.player[i];
+            if (player != null && player.active)
+            {
+                sum += GetValue(player.GetModPlayer<WeakeningPlayer>().KillCounts, npcKey);
+            }
+        }
+
+        return sum;
     }
 
     public static double GetDamageSum(int type)
     {
-        return GetDamageSum(GetNPCKey(type));
-    }
-
-    public static void AddKillCount(int type, int kills = 1)
-    {
         string npcKey = GetNPCKey(type);
 
+        if (!UsePlayerScope)
+        {
+            return GetValue(WorldDamageSums, npcKey);
+        }
+
+        if (Main.netMode == NetmodeID.SinglePlayer)
+        {
+            return GetValue(LocalWeakeningPlayer.DamageSums, npcKey);
+        }
+
+        double sum = 0.0;
+        for (int i = 0; i < Main.maxPlayers; i++)
+        {
+            Player player = Main.player[i];
+            if (player != null && player.active)
+            {
+                sum += GetValue(player.GetModPlayer<WeakeningPlayer>().DamageSums, npcKey);
+            }
+        }
+
+        return sum;
+    }
+
+    public static void RegisterKill(int type, int creditPlayer, int kills = 1)
+    {
+        string npcKey = GetNPCKey(type);
         WorldKillCounts[npcKey] = GetValue(WorldKillCounts, npcKey) + kills;
-
-        Dictionary<string, int> playerKills = LocalWeakeningPlayer.KillCounts;
-        playerKills[npcKey] = GetValue(playerKills, npcKey) + kills;
+        ApplyPlayerKill(creditPlayer, type, kills);
     }
 
-    public static void AddTotalDamage(int type, double damage)
+    public static void RegisterDamage(int type, int creditPlayer, double damage)
     {
         string npcKey = GetNPCKey(type);
-
         WorldDamageSums[npcKey] = GetValue(WorldDamageSums, npcKey) + damage;
+        ApplyPlayerDamage(creditPlayer, type, damage);
+    }
 
-        Dictionary<string, double> playerDamage = LocalWeakeningPlayer.DamageSums;
-        playerDamage[npcKey] = GetValue(playerDamage, npcKey) + damage;
+    public static void ApplyPlayerKill(int player, int type, int kills)
+    {
+        WeakeningPlayer wp = GetWeakeningPlayer(player);
+        if (wp == null)
+        {
+            return;
+        }
+
+        string npcKey = GetNPCKey(type);
+        wp.KillCounts[npcKey] = GetValue(wp.KillCounts, npcKey) + kills;
+    }
+
+    public static void ApplyPlayerDamage(int player, int type, double damage)
+    {
+        WeakeningPlayer wp = GetWeakeningPlayer(player);
+        if (wp == null)
+        {
+            return;
+        }
+
+        string npcKey = GetNPCKey(type);
+        wp.DamageSums[npcKey] = GetValue(wp.DamageSums, npcKey) + damage;
+    }
+
+    private static WeakeningPlayer GetWeakeningPlayer(int player)
+    {
+        if (Main.netMode == NetmodeID.SinglePlayer)
+        {
+            return LocalWeakeningPlayer;
+        }
+
+        if (player < 0 || player >= Main.maxPlayers)
+        {
+            return null;
+        }
+
+        Player p = Main.player[player];
+        if (p == null || !p.active)
+        {
+            return null;
+        }
+
+        return p.GetModPlayer<WeakeningPlayer>();
+    }
+
+    internal static void ReceivePlayerFullSync(int player, BinaryReader reader)
+    {
+        WeakeningPlayer wp = (player >= 0 && player < Main.maxPlayers && Main.player[player] != null)
+            ? Main.player[player].GetModPlayer<WeakeningPlayer>()
+            : null;
+
+        Dictionary<string, int> killTarget = wp?.KillCounts ?? new Dictionary<string, int>();
+        Dictionary<string, double> damageTarget = wp?.DamageSums ?? new Dictionary<string, double>();
+
+        ReadIntDictStream(reader, killTarget);
+        ReadDoubleDictStream(reader, damageTarget);
     }
 
     public static double GetHealthMultiplier(int type)
@@ -180,6 +266,50 @@ public class WeakeningSystem : ModSystem
     private static double GetValue(Dictionary<string, double> dict, string key)
     {
         return dict.TryGetValue(key, out double value) ? value : 0.0;
+    }
+
+    internal static void WriteIntDictStream(BinaryWriter writer, Dictionary<string, int> dict)
+    {
+        writer.Write(dict.Count);
+        foreach (var entry in dict)
+        {
+            writer.Write(entry.Key);
+            writer.Write(entry.Value);
+        }
+    }
+
+    internal static void ReadIntDictStream(BinaryReader reader, Dictionary<string, int> dict)
+    {
+        dict.Clear();
+        int count = reader.ReadInt32();
+        for (int i = 0; i < count; i++)
+        {
+            string key = reader.ReadString();
+            int value = reader.ReadInt32();
+            dict[key] = value;
+        }
+    }
+
+    internal static void WriteDoubleDictStream(BinaryWriter writer, Dictionary<string, double> dict)
+    {
+        writer.Write(dict.Count);
+        foreach (var entry in dict)
+        {
+            writer.Write(entry.Key);
+            writer.Write(entry.Value);
+        }
+    }
+
+    internal static void ReadDoubleDictStream(BinaryReader reader, Dictionary<string, double> dict)
+    {
+        dict.Clear();
+        int count = reader.ReadInt32();
+        for (int i = 0; i < count; i++)
+        {
+            string key = reader.ReadString();
+            double value = reader.ReadDouble();
+            dict[key] = value;
+        }
     }
 
     internal static void SaveIntDict(TagCompound tag, string keysKey, string valuesKey, Dictionary<string, int> dict)

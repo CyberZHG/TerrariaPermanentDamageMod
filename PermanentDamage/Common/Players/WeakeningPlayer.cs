@@ -26,4 +26,14 @@ public class WeakeningPlayer : ModPlayer
         WeakeningSystem.LoadIntDict(tag, SAVE_KEY_KILL_COUNT_KEYS, SAVE_KEY_KILL_COUNT_VALUES, KillCounts);
         WeakeningSystem.LoadDoubleDict(tag, SAVE_KEY_DAMAGE_SUM_KEYS, SAVE_KEY_DAMAGE_SUM_VALUES, DamageSums);
     }
+
+    public override void SyncPlayer(int toWho, int fromWho, bool newPlayer)
+    {
+        ModPacket packet = Mod.GetPacket();
+        packet.Write(global::PermanentDamage.PermanentDamage.PlayerFullSync);
+        packet.Write((byte)Player.whoAmI);
+        WeakeningSystem.WriteIntDictStream(packet, KillCounts);
+        WeakeningSystem.WriteDoubleDictStream(packet, DamageSums);
+        packet.Send(toWho, fromWho);
+    }
 }

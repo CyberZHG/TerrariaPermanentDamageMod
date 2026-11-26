@@ -15,13 +15,13 @@ namespace PermanentDamage.NPCs;
 public class WeakeningNPC : GlobalNPC
 {
     public override bool InstancePerEntity => true;
-    
+
     private bool initialized = false;
     private int previousLife = 0;
 
     private static bool IsEligible(NPC npc)
     {
-		// May be optional: !npc.dontTakeDamage && npc.lifeMax > 1
+        // May be optional: !npc.dontTakeDamage && npc.lifeMax > 1
         return !npc.friendly
                && !npc.townNPC
                && !npc.immortal
@@ -69,59 +69,79 @@ public class WeakeningNPC : GlobalNPC
         }
 
         double damage = (double)lifeLost / npc.lifeMax;
-        WeakeningSystem.AddTotalDamage(npc.type, damage);
-        PermanentDamage.BroadcastDamageUpdate(npc.type, damage);
+        int creditPlayer = GetCreditPlayer(npc);
+        WeakeningSystem.RegisterDamage(npc.type, creditPlayer, damage);
+        if (creditPlayer >= 0)
+        {
+            PermanentDamage.BroadcastPlayerDamage(creditPlayer, npc.type, damage);
+        }
     }
 
-	private void ShowWeakeningMessage(NPC npc)
-	{
-		if (!WeakeningSystem.Settings.ShowWeakeningMessage)
-		{
-			return;
-		}
-		if (WeakeningSystem.GetKillCount(npc.type) % (int)WeakeningSystem.Settings.MessageFrequency != 0)
-		{
- 			return;
-		}
-
-		StringBuilder message = new StringBuilder();
-		message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Prefix"));
-		message.Append(npc.FullName + " (" + npc.type.ToString() + ")  ");
-		if (WeakeningSystem.Settings.Metric == WeakeningMetric.KillCount)
-		{
-			message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Kills"));
-			message.Append(" " + WeakeningSystem.GetKillCount(npc.type).ToString());
-		}
-		else
-		{
-			message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Damage"));
-			message.Append(" " + WeakeningSystem.GetDamageSum(npc.type).ToString("0.##"));
-		}
-		double multiplier = WeakeningSystem.GetHealthMultiplier(npc.type) * 100.0;
-		message.Append("  ");
-		message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.LifeMax"));
-		message.Append(" ");
-		if (multiplier > 1.0)
-		{
-			message.Append(multiplier.ToString("0.#") + "%");
-		}
-		else if (multiplier > 0.1)
+    private static int GetCreditPlayer(NPC npc)
+    {
+        if (Main.netMode == NetmodeID.SinglePlayer)
         {
-			message.Append(multiplier.ToString("0.##") + "%");
-		}
-		else
-		{
-			message.Append(multiplier.ToString("0.###") + "%");
-		}
-		if (Main.netMode == NetmodeID.Server)
-		{
-			Terraria.Chat.ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message.ToString()), Microsoft.Xna.Framework.Color.White);
-		}
-		else
-		{
-			Main.NewText(message.ToString());
-		}
-	}
+            return Main.myPlayer;
+        }
+
+        int player = npc.lastInteraction;
+        if (player >= 0 && player < Main.maxPlayers && Main.player[player] != null && Main.player[player].active)
+        {
+            return player;
+        }
+
+        return -1;
+    }
+
+    private void ShowWeakeningMessage(NPC npc)
+    {
+        if (!WeakeningSystem.Settings.ShowWeakeningMessage)
+        {
+            return;
+        }
+        if (WeakeningSystem.GetKillCount(npc.type) % (int)WeakeningSystem.Settings.MessageFrequency != 0)
+        {
+            return;
+        }
+
+        StringBuilder message = new StringBuilder();
+        message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Prefix"));
+        message.Append(npc.FullName + " (" + npc.type.ToString() + ")  ");
+        if (WeakeningSystem.Settings.Metric == WeakeningMetric.KillCount)
+        {
+            message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Kills"));
+            message.Append(" " + WeakeningSystem.GetKillCount(npc.type).ToString());
+        }
+        else
+        {
+            message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.Damage"));
+            message.Append(" " + WeakeningSystem.GetDamageSum(npc.type).ToString("0.##"));
+        }
+        double multiplier = WeakeningSystem.GetHealthMultiplier(npc.type) * 100.0;
+        message.Append("  ");
+        message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.LifeMax"));
+        message.Append(" ");
+        if (multiplier > 1.0)
+        {
+            message.Append(multiplier.ToString("0.#") + "%");
+        }
+        else if (multiplier > 0.1)
+        {
+            message.Append(multiplier.ToString("0.##") + "%");
+        }
+        else
+        {
+            message.Append(multiplier.ToString("0.###") + "%");
+        }
+        if (Main.netMode == NetmodeID.Server)
+        {
+            Terraria.Chat.ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message.ToString()), Microsoft.Xna.Framework.Color.White);
+        }
+        else
+        {
+            Main.NewText(message.ToString());
+        }
+    }
 
     public override void OnKill(NPC npc)
     {
@@ -132,9 +152,13 @@ public class WeakeningNPC : GlobalNPC
 
         RegisterDamage(npc, previousLife);
 
-        WeakeningSystem.AddKillCount(npc.type);
-        PermanentDamage.BroadcastKillUpdate(npc.type);
-		ShowWeakeningMessage(npc);
+        int creditPlayer = GetCreditPlayer(npc);
+        WeakeningSystem.RegisterKill(npc.type, creditPlayer);
+        if (creditPlayer >= 0)
+        {
+            PermanentDamage.BroadcastPlayerKill(creditPlayer, npc.type);
+        }
+        ShowWeakeningMessage(npc);
     }
 
     public override void SendExtraAI(NPC npc, BitWriter bitWriter, BinaryWriter binaryWriter)
