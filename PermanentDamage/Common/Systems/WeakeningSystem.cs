@@ -88,12 +88,7 @@ public class WeakeningSystem : ModSystem
             return GetValue(WorldKillCounts, npcKey);
         }
 
-        if (Main.netMode == NetmodeID.SinglePlayer)
-        {
-            return GetValue(LocalWeakeningPlayer.KillCounts, npcKey);
-        }
-
-        // Player scope in multiplayer: aggregate of every player.
+        // We need to get the sum even in single-player mode because there may be fake players in some mods
         int sum = 0;
         for (int i = 0; i < Main.maxPlayers; i++)
         {
@@ -116,11 +111,7 @@ public class WeakeningSystem : ModSystem
             return GetValue(WorldDamageSums, npcKey);
         }
 
-        if (Main.netMode == NetmodeID.SinglePlayer)
-        {
-            return GetValue(LocalWeakeningPlayer.DamageSums, npcKey);
-        }
-
+        // We need to get the sum even in single-player mode because there may be fake players in some mods
         double sum = 0.0;
         for (int i = 0; i < Main.maxPlayers; i++)
         {
