@@ -99,9 +99,26 @@ public class WeakeningNPC : GlobalNPC
         {
             return;
         }
-        if (WeakeningSystem.GetKillCount(npc.type) % (int)WeakeningSystem.Settings.MessageFrequency != 0)
+        int killCount = WeakeningSystem.GetKillCount(npc.type);
+        if (killCount % (int)WeakeningSystem.Settings.MessageFrequency != 0)
         {
             return;
+        }
+
+        if (WeakeningSystem.Settings.Metric == WeakeningMetric.KillCount)
+        {
+            if (killCount > WeakeningSystem.Settings.WeakeningThreshold)
+            {
+                return;
+            }
+        }
+        else
+        {
+            double damage = WeakeningSystem.GetDamageSum(npc.type);
+            if (damage > WeakeningSystem.Settings.WeakeningThreshold)
+            {
+                return;
+            }
         }
 
         StringBuilder message = new StringBuilder();
@@ -121,18 +138,7 @@ public class WeakeningNPC : GlobalNPC
         message.Append("  ");
         message.Append(Language.GetTextValue("Mods.PermanentDamage.Messages.LifeMax"));
         message.Append(" ");
-        if (multiplier > 1.0)
-        {
-            message.Append(multiplier.ToString("0.#") + "%");
-        }
-        else if (multiplier > 0.1)
-        {
-            message.Append(multiplier.ToString("0.##") + "%");
-        }
-        else
-        {
-            message.Append(multiplier.ToString("0.###") + "%");
-        }
+        message.Append(multiplier.ToString("0.#") + "%");
         if (Main.netMode == NetmodeID.Server)
         {
             Terraria.Chat.ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message.ToString()), Microsoft.Xna.Framework.Color.White);
